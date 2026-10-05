@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Опыт Юнга — игра-симулятор</title>
+<style>
+:root{--c:#c8c8c8;--bg:#111;--card:#1c1c1c;--line:#333;--dim:#777;--gold:#ffd24a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#ddd;font-family:system-ui,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;padding:14px;max-width:1450px;margin:0 auto}
+@media(max-width:1000px){.app{grid-template-columns:1fr}}
+canvas{width:100%;height:auto;aspect-ratio:900/520;display:block;background:#0a0a0a;border:1px solid #2e2e2e;border-radius:0}
+aside{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:0;padding:14px}
+.row{display:flex;justify-content:space-between;font-size:14px;margin:12px 0 5px}
+.row output{font-weight:700;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:6px;appearance:none;-webkit-appearance:none;border-radius:0;background:#2a2a2a;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:0;background:#ccc;border:2px solid #666;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:0;background:#ccc;border:2px solid #666;cursor:pointer}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+button{font:inherit;font-size:14px;font-weight:600;color:#ccc;background:#242424;border:1px solid #383838;border-radius:0;padding:10px;cursor:pointer}
+button:hover{background:#2e2e2e}
+button.on{background:#3a3a3a;border-color:#666;color:#fff}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--dim);margin-top:10px}
+.f{font:15px/1.6 Cambria,Georgia,serif}
+.f b{color:#e0c96e}.f i{font-style:normal;color:#aaa}
+.f hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+</style>
+</head>
+<body>
+<div class="app">
+  <canvas id="cv"></canvas>
+  <aside>
+    <div class="card">
+      <div class="row" style="margin-top:0"><span>Длина волны λ</span><output id="oL1"></output></div>
+      <input type="range" id="sLam" min="380" max="750" step="1" value="550">
+      <div class="row"><span>Расстояние между щелями d</span><output id="oD"></output></div>
+      <input type="range" id="sD" min="0.10" max="0.40" step="0.005" value="0.20">
+      <div class="row"><span>Расстояние до экрана L</span><output id="oLL"></output></div>
+      <input type="range" id="sL" min="1" max="4" step="0.1" value="2">
+      <div class="row"><span>Поток фотонов</span><output id="oR"></output></div>
+      <input type="range" id="sR" min="10" max="300" step="10" value="90">
+      <div class="btns">
+        <button id="bDet">👁 Наблюдатель</button>
+        <button id="bPause">⏸ Заморозить</button>
+        <button id="bClr" style="grid-column:span 2">Очистить экран</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="cTh"> Показать теоретическую кривую</label>
+    </div>
+    <div class="card f" id="fm"></div>
+  </aside>
+</div>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const cv=$("cv"),ctx=cv.getContext("2d"),W=900,H=520,CY=260,EX=60,BX=230,PPM=8,A=0.04;
+const dpr=Math.min(devicePixelRatio||1,2);cv.width=W*dpr;cv.height=H*dpr;
+const S={lam:550,d:.2,L:2,rate:90,det:false,pause:false,n:0,th:false};
+let hits=new Float32Array(H+1),ph=[],acc=0;
+
+function rgb(w){let r,g,b;
+ if(w<440){r=(440-w)/60;g=0;b=1}else if(w<490){r=0;g=(w-440)/50;b=1}
+ else if(w<510){r=0;g=1;b=(510-w)/20}else if(w<580){r=(w-510)/70;g=1;b=0}
+ else if(w<645){r=1;g=(645-w)/65;b=0}else{r=1;g=0;b=0}
+ let f=1;if(w<420)f=.5+.5*(w-380)/40;else if(w>700)f=.5+.5*(750-w)/50;
+ return[r,g,b].map(v=>Math.round(255*Math.pow(v*f,.8)))}
+const cs=(a=1)=>{const c=rgb(S.lam);return`rgba(${c[0]},${c[1]},${c[2]},${a})`};
+$("sLam").style.background="linear-gradient(90deg,"+Array.from({length:38},(_,i)=>{const w=380+i*10,c=rgb(w);return`rgb(${c}) ${i/37*100}%`}).join(",")+")";
+
+const sx=()=>BX+100*S.L, dy=()=>S.lam*S.L/S.d*1e-3;
+function inten(y,withInt){
+ const k=1e3/(S.lam*S.L),sa=Math.PI*A*y*k,s=Math.abs(sa)<1e-9?1:Math.sin(sa)/sa;
+ return(withInt?Math.cos(Math.PI*S.d*y*k)**2:1)*s*s}
+function sample(){for(let t=0;t<500;t++){const y=(Math.random()*2-1)*32;if(Math.random()<inten(y,!S.det))return y}return 0}
+
+function emit(){
+ const y=sample(),dp=S.d*400,sl=CY+(Math.random()<.5?-1:1)*dp/2;
+ ph.push({x:EX,sl,hy:CY+y*PPM,y:0})}
+function pos(p){const s=sx();
+ return p.x<BX?CY+(p.sl-CY)*(p.x-EX)/(BX-EX):p.sl+(p.hy-p.sl)*(p.x-BX)/(s-BX)}
+
+function reset(){hits.fill(0);ph=[];S.n=0}
+
+function ui(){
+ const c=rgb(S.lam);document.documentElement.style.setProperty("--c",`rgb(${c})`);
+ $("oL1").textContent=S.lam+" нм";$("oL1").style.color=`rgb(${c})`;
+ $("oD").textContent=S.d.toFixed(3)+" мм";$("oLL").textContent=S.L.toFixed(1)+" м";$("oR").textContent=S.rate+"/с";
+ const s1=S.lam*1e-6/S.d,d=dy();
+ $("fm").innerHTML=`<b>d · sin θ = m · λ</b><br>sin θ₁ = λ/d = <i>${s1.toFixed(4)}</i>, θ₁ = <i>${(Math.asin(s1)*57.2958).toFixed(3)}°</i><hr>
+ <b>Δy = λ · L / d</b><br>= ${S.lam}·10⁻⁹ · ${S.L.toFixed(1)} / ${(S.d*1e-3).toExponential(2).replace("e-","·10⁻")}<br>Δy = <i style="font-size:18px">${d.toFixed(2)} мм</i><hr>
+ Минимумы: d · sin θ = (m + ½) · λ`}
+
+const bind=(id,k,reg)=>$(id).addEventListener("input",e=>{S[k]=+e.target.value;if(reg)reset();ui()});
+bind("sLam","lam",1);bind("sD","d",1);bind("sL","L",1);bind("sR","rate",0);
+$("bDet").onclick=()=>{S.det=!S.det;$("bDet").classList.toggle("on",S.det);$("bDet").textContent=S.det?"👁 Наблюдатель: ВКЛ":"👁 Наблюдатель";reset()};
+$("bPause").onclick=()=>{S.pause=!S.pause;$("bPause").textContent=S.pause?"▶️ Продолжить":"⏸ Заморозить"};
+$("bClr").onclick=reset;
+$("cTh").onchange=e=>S.th=e.target.checked;
+addEventListener("keydown",e=>{if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault();$("bPause").click()}});
+
+function step(dt){
+ acc+=S.rate*dt;while(acc>=1){acc--;emit()}
+ const v=380*dt,s=sx();
+ for(let i=ph.length-1;i>=0;i--){const p=ph[i];p.x+=v;
+  if(p.x>=s){const b=Math.round(p.hy);if(b>=0&&b<=H)hits[b]++;S.n++;ph.splice(i,1)}}
+}
+
+function draw(){
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle="#04070f";ctx.fillRect(0,0,W,H);
+ const s=sx(),dp=S.d*400,y1=CY-dp/2,y2=CY+dp/2,sw=5;
+ ctx.fillStyle="#2a3763";
+ ctx.fillRect(BX-4,0,8,y1-sw);ctx.fillRect(BX-4,y1+sw,8,y2-y1-2*sw);ctx.fillRect(BX-4,y2+sw,8,H-y2-sw);
+ const g=ctx.createRadialGradient(EX,CY,2,EX,CY,34);g.addColorStop(0,cs(1));g.addColorStop(1,cs(0));
+ ctx.fillStyle=g;ctx.beginPath();ctx.arc(EX,CY,34,0,7);ctx.fill();
+ ctx.fillStyle="#9fb0e0";ctx.font="13px system-ui";ctx.textAlign="center";
+ ctx.fillText("Источник",EX,CY+56);ctx.fillText("Щели",BX,16);ctx.fillText("Экран",s+6,16);
+ const d=dy();ctx.font="11px system-ui";ctx.textAlign="right";
+ for(let m=1;m*d<32;m++){for(const sg of[-1,1]){const yy=CY+sg*m*d*PPM;
+  ctx.fillStyle="rgba(255,255,255,.4)";ctx.fillRect(s-8,yy,8,1);}
+  if(!S.det&&m<=8){ctx.fillStyle="rgba(190,205,245,.6)";ctx.fillText("m="+m,s-12,CY-m*d*PPM+4)}}
+ let mx=1;for(let i=0;i<=H;i++)if(hits[i]>mx)mx=hits[i];
+ const c=rgb(S.lam);ctx.fillStyle="#18224a";ctx.fillRect(s,0,14,H);
+ for(let i=0;i<=H;i++)if(hits[i]){const a=Math.pow(hits[i]/mx,.6);ctx.fillStyle=`rgba(${c},${a})`;ctx.fillRect(s+1,i,12,1)}
+ const x0=s+22,wm=W-x0-8;
+ ctx.fillStyle=cs(.55);for(let i=0;i<=H;i++)if(hits[i])ctx.fillRect(x0,i,hits[i]/mx*wm,1);
+ if(S.th){ctx.strokeStyle="rgba(255,255,255,.55)";ctx.setLineDash([4,4]);ctx.beginPath();
+  for(let i=0;i<=H;i++){const x=x0+inten((i-CY)/PPM,!S.det)*wm;i?ctx.lineTo(x,i):ctx.moveTo(x,i)}ctx.stroke();ctx.setLineDash([])}
+ ctx.fillStyle="#9fb0e0";ctx.textAlign="left";ctx.fillText("число попаданий",x0,H-8);
+ if(S.det){ctx.strokeStyle="#ff5a4d";ctx.lineWidth=2;ctx.strokeRect(BX+8,y1-16,26,32);ctx.strokeRect(BX+8,y2-16,26,32);ctx.lineWidth=1;
+  ctx.fillStyle="#ff5a4d";ctx.textAlign="left";ctx.font="12px system-ui";ctx.fillText("наблюдатель",BX+38,y1-6)}
+ for(const p of ph){const y=pos(p);
+  const x2=Math.max(EX,p.x-16),y2b=pos({x:x2,sl:p.sl,hy:p.hy});
+  const gr=ctx.createLinearGradient(x2,y2b,p.x,y);gr.addColorStop(0,cs(0));gr.addColorStop(1,cs(.9));
+  ctx.strokeStyle=gr;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x2,y2b);ctx.lineTo(p.x,y);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(p.x,y,2,0,7);ctx.fill()}
+ ctx.lineWidth=1;
+ if(S.pause){ctx.fillStyle="rgba(230,110,40,.92)";ctx.fillRect(12,H-38,92,26);ctx.fillStyle="#fff";ctx.textAlign="left";ctx.font="bold 13px system-ui";ctx.fillText("⏸ ПАУЗА",22,H-20)}
+ ctx.fillStyle="#9fb0e0";ctx.font="13px system-ui";ctx.textAlign="left";ctx.fillText("Фотонов на экране: "+S.n,12,H-48)}
+
+let last=performance.now();
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(!S.pause)step(dt);draw();requestAnimationFrame(loop)}
+ui();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
