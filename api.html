@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="kk"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>API: бағдарламалар қалай сөйлеседі?</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#161616;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{margin:0;box-sizing:border-box}html{background:#9d8ce8;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font:400 16px/1.55 Inter,system-ui,sans-serif;color:var(--fg)}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.hd{position:fixed;z-index:5;left:6vw;right:6vw;top:calc(14px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;font:500 12px 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--fg)}
+section{position:relative;z-index:1;min-height:190vh;padding:0 6vw}
+.c{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center;max-width:470px;will-change:opacity,transform}
+section.r .c{margin-left:auto}
+.t{font:500 12px 'JetBrains Mono',monospace;opacity:.7;margin-bottom:14px}
+h2{font-size:clamp(32px,5.2vw,64px);line-height:.98;letter-spacing:-.045em;font-weight:800;margin-bottom:18px}
+p{opacity:.88;margin-bottom:14px;max-width:44ch}
+.k{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.k span{border:1px solid currentColor;padding:6px 11px;font:500 12px 'JetBrains Mono',monospace;border-radius:4px;background:#ffffff18}
+.cd{display:inline-block;font:500 13px 'JetBrains Mono',monospace;background:#161616;color:#c9bcff;border:1px solid #a18cf3;padding:10px 14px;border-radius:4px;max-width:100%;overflow-x:auto}
+@media(max-width:760px){.c{justify-content:flex-end;padding-bottom:7vh;max-width:none}h2{font-size:30px}p{font-size:14px;margin-bottom:10px}}
+@media(prefers-reduced-motion:reduce){.c{transition:none}}
+</style></head><body>
+<div class="hd"><span>API_INTRO.TXT</span><span id="n">01 / 08</span></div>
+<main id="m"></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const D=[
+['API_INTRO.TXT','API: бағдарламалар қалай сөйлеседі?','IT студенттеріне арналған кіріспе. Төмен айналдырыңыз: әр скролл жаңа сахнаны ашады.',[],''],
+['ҚОЛДАНУ','API күнделікті цифрлық тәжірибенің негізінде тұр','Біз оны байқамай-ақ күн сайын қолданамыз. Қолданба серверден профиль, төлем немесе хабарлама туралы дерек алады.',['Мобильді қосымша','Веб-сайт','Бұлттық сервис'],''],
+['КЕЛІСІМ','API — дайын функцияға апаратын келісім','Application Programming Interface — бағдарлама мүмкіндіктеріне қол жеткізудің анықталған тәсілі. Ішкі іске асыруды білмей-ақ қолжетімді операцияларды қолдануға болады.',[],'GET /weather?city=Almaty'],
+['МОДЕЛЬ','Клиент сұрайды, сервер жауап береді','HTTP жүйесінде клиент сұраулары мен сервер жауаптары жеке хабарламалармен алмасады. Сервис қаланың болжамын қайтарады, ал клиент оның ішкі есептеуін білмейді.',['Клиент: сұрау жібереді','Сервер: тексеріп, өңдейді','Жауап: нәтиже немесе қате'],''],
+['СҰРАУ','HTTP сұрауы неден тұрады?','Сұраудың әр бөлігі серверге не істеу керегін түсіндіреді: әдіс әрекетті, URL ресурсты, тақырыптар метадеректі, body жіберілетін деректі береді.',['GET: алу','POST: жасау','PUT / PATCH: жаңарту','DELETE: өшіру'],'POST /users · Authorization · {"name":"Aruzhan"}'],
+['ЖАУАП','Жауап нәтижесі және оның мағынасы','JSON — API арқылы дерек жеткізудің танымал форматы: кілт пен мән жұптары ақпаратты құрылымды түрде береді.',['200 сәтті','201 жасалды','401/403 рұқсат','404 табылмады','500 сервер қатесі'],'{ "city": "Almaty", "temperature": 18 }'],
+['ENDPOINT','Endpoint — API-дің нақты кіру нүктесі','Белгілі бір ресурсқа немесе әрекетке апаратын нақты жол. Query parameter нәтижені сүзуге, сұрыптауға немесе беттеуге көмектеседі.',['/users','/products','/orders','/weather?city=Almaty'],''],
+['АУТЕНТИФИКАЦИЯ','API кімге сенуі керек?','Сервер сұрауды қабылдамас бұрын клиенттің кім екенін және құқығын тексереді. Құпия кілтті клиент кодына немесе ашық репозиторийге жазбаңыз.',['API key','Bearer token','OAuth','HTTPS / TLS'],'401 → challenge']
+];
+m.innerHTML=D.map((d,i)=>`<section class="${i%2?'r':''}"><div class="c"><div class="t">${String(i+1).padStart(2,'0')} / ${d[0]}</div><h2>${d[1]}</h2><p>${d[2]}</p>${d[3].length?'<div class="k">'+d[3].map(x=>'<span>'+x+'</span>').join('')+'</div>':''}${d[4]?'<div><span class="cd">'+d[4]+'</span></div>':''}</div></section>`).join('');
+
+const T=THREE,N=8,X=60,sm=x=>x*x*(3-2*x),cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const R=new T.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.toneMapping=T.ACESFilmicToneMapping;R.outputEncoding=T.sRGBEncoding;document.body.prepend(R.domElement);
+const S=new T.Scene();S.background=new T.Color('#9d8ce8');S.fog=new T.Fog('#9d8ce8',25,80);
+const C=new T.PerspectiveCamera(45,1,.1,200);
+S.add(new T.AmbientLight(0xffffff,.65));const dl=new T.DirectionalLight(0xffffff,1.1),pl=new T.PointLight(0xa18cf3,2.4,45),pl2=new T.PointLight(0x7cf0d0,1.4,45);S.add(dl,pl,pl2);
+const std=(c,mt,r,e,ei)=>new T.MeshStandardMaterial({color:c,metalness:mt,roughness:r,emissive:e||0,emissiveIntensity:ei||0});
+const dk=std(0x1b1822,.7,.3),sl=std(0x2c2838,.8,.4),pu=std(0xa18cf3,.3,.35,0x5b3fd0,.55),wh=std(0xf2efff,.2,.4),gy=std(0x8b84a6,.4,.5);
+const gl=c=>new T.MeshBasicMaterial({color:c}),wf=(c,o)=>new T.MeshBasicMaterial({color:c,wireframe:true,transparent:true,opacity:o});
+const mk=(g,m,x,y,z,p)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);p.add(o);return o},BX=(a,b,c)=>new T.BoxGeometry(a,b,c);
+const lab=(s,c,h)=>{const k=document.createElement('canvas');k.width=512;k.height=128;const x=k.getContext('2d');x.font='600 60px JetBrains Mono,monospace';x.fillStyle=c;x.textAlign='center';x.textBaseline='middle';x.fillText(s,256,64);const o=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(k),transparent:true,depthWrite:false}));o.scale.set(4*h,h,1);return o};
+const pts=(g,n,r,c,s)=>{const a=new Float32Array(n*3).map(()=>(Math.random()-.5)*2*r),o=new T.Points(new T.BufferGeometry().setAttribute('position',new T.BufferAttribute(a,3)),new T.PointsMaterial({color:c,size:s,transparent:true,opacity:.8}));g.add(o);return o};
+const edge=(g,c,p)=>{const l=new T.LineSegments(new T.EdgesGeometry(g),new T.LineBasicMaterial({color:c}));p.add(l);return l};
+const G=[...Array(N)].map((_,i)=>{const g=new T.Group();g.position.x=i*X;S.add(g);return g}),U=[];
+
+// 0 — сервер стойкасы мен телефон
+{const g=G[0],rk=new T.Group(),L=[],V=T.Vector3;g.add(rk);mk(BX(3,5,2.4),dk,0,0,0,rk);
+for(let j=0;j<7;j++){const y=2-j*.62;mk(BX(2.6,.45,.1),sl,0,y,1.2,rk);const q=gl(0xa18cf3);L.push(q);mk(BX(.14,.14,.06),q,1,y,1.27,rk)}
+const ph=new T.Group();ph.position.set(3.4,-2.4,3.2);ph.rotation.set(-1.25,0,-.5);g.add(ph);mk(BX(1,2,.12),dk,0,0,0,ph);mk(new T.PlaneGeometry(.88,1.8),pu,0,0,.07,ph);
+const cu=[],pl_=[];for(let k=0;k<5;k++){const c=new T.CatmullRomCurve3([new V(-1+k*.45,-2.2,1.2),new V(-.5+k*.6,-3,2.6+k*.15),new V(2.2+k*.2,-2.6,3.4)]);cu.push(c);rk.parent.add(new T.Mesh(new T.TubeGeometry(c,40,.05,6),dk));pl_.push(mk(new T.SphereGeometry(.09,8,8),gl(0xffffff),0,0,0,g))}
+pts(g,700,14,0x161616,.07);
+U[0]=t=>{rk.rotation.y=-.5+Math.sin(t*.4)*.15;g.children[0].rotation.y=0;L.forEach((q,j)=>q.color.setHex(Math.sin(t*3+j*1.7)>0?0xa18cf3:0x7cf0d0));pl_.forEach((o,k)=>o.position.copy(cu[k].getPoint((t*.3+k*.2)%1)));ph.position.y=-2.4+Math.sin(t)*.12}}
+
+// 1 — үш тұтынушы орбитада
+{const g=G[1],o=[],ph=new T.Group(),br=new T.Group(),cd=new T.Group();
+mk(new T.IcosahedronGeometry(1.2,1),pu,0,0,0,g);const w=mk(new T.IcosahedronGeometry(2,1),wf(0xa18cf3,.35),0,0,0,g);const lb=lab('API','#fff',.9);g.add(lb);lb.position.y=2.6;
+mk(BX(1.2,2.4,.15),dk,0,0,0,ph);mk(new T.PlaneGeometry(1,2.1),pu,0,0,.09,ph);
+mk(BX(3,2,.15),wh,0,0,0,br);mk(BX(3,.35,.17),dk,0,.83,0,br);mk(BX(2.6,1.3,.17),pu,0,-.2,0,br);
+[[-.8,0,.7],[0,.4,.95],[.9,0,.7]].forEach(a=>mk(new T.SphereGeometry(a[2],20,20),wh,a[0],a[1],0,cd));mk(BX(2.5,.5,.8),wh,0,-.25,0,cd);
+[ph,br,cd].forEach(x=>g.add(x));const p=pts(g,900,10,0xa18cf3,.06);
+U[1]=t=>{w.rotation.y=t*.3;w.rotation.x=t*.2;[ph,br,cd].forEach((x,k)=>{const a=t*.35+k*2.094;x.position.set(Math.cos(a)*5.5,Math.sin(t+k)*.6,Math.sin(a)*5.5);x.rotation.y=-a+Math.PI/2});p.rotation.y=t*.03}}
+
+// 2 — қара жәшік және функциялар
+{const g=G[2],cb=new T.Group(),bt=[];g.add(cb);mk(BX(3,3,3),dk,0,0,0,cb);edge(BX(3.02,3.02,3.02),0xffffff,cb);
+const cg=edge(BX(4.6,4.6,4.6),0x161616,g),rg=mk(new T.TorusGeometry(3.9,.03,8,80),wh,0,0,0,g);rg.rotation.x=1.2;
+const q=lab('ішкі есептеу ?','#c9bcff',.55);q.position.set(0,0,1.7);cb.add(q);
+['getWeather()','getUser()','pay()'].forEach((s,i)=>{const b=new T.Group();mk(BX(2.8,.55,.2),pu,0,0,0,b);const l=lab(s,'#161616',.5);l.position.z=.15;b.add(l);b.position.set(1.4,1.2-i*.95,3.2);g.add(b);bt.push(b)});
+pts(g,500,9,0x161616,.06);
+U[2]=(t,l)=>{cb.rotation.y=t*.25;cg.rotation.y=-t*.15;cg.rotation.x=t*.1;rg.rotation.z=t*.4;bt.forEach((b,i)=>{b.position.y=1.2-i*.95+Math.sin(t*1.5+i)*.12;b.position.z=3.2+sm(cl(l*2))*1.2})}}
+
+// 3 — клиент ↔ сервер
+{const g=G[3],cm=new T.Group(),sv=new T.Group();g.add(cm,sv);cm.position.x=-7;sv.position.x=7;
+mk(BX(3,2,.2),dk,0,.4,0,cm);mk(new T.PlaneGeometry(2.7,1.7),pu,0,.4,.11,cm);mk(BX(.3,.8,.3),dk,0,-.9,0,cm);mk(BX(1.4,.1,.8),dk,0,-1.35,0,cm);
+const Ls=[];for(let j=0;j<3;j++){mk(BX(2.6,.9,2),dk,0,-1+j*1.05,0,sv);const q=gl(0x7cf0d0);Ls.push(q);mk(BX(.15,.15,.05),q,1,-1+j*1.05,1.02,sv)}
+[.8,-.8].forEach(y=>mk(BX(11,.03,.03),pu,0,y,0,g));
+const rq=mk(new T.SphereGeometry(.38,16,16),pu,0,.8,0,g),rs=mk(new T.SphereGeometry(.38,16,16),wh,0,-.8,0,g);
+const a=lab('GET','#a18cf3',.8),b=lab('200','#ffffff',.8);a.position.y=1;b.position.y=1;rq.add(a);rs.add(b);
+const gr=new T.GridHelper(80,80,0xa18cf3,0x2a2540);gr.position.y=-3;g.add(gr);pts(g,500,14,0xa18cf3,.06);
+U[3]=t=>{const k=(t*.22)%1;rq.position.x=-5+10*k;rs.position.x=5-10*((k+.5)%1);rq.scale.setScalar(1+.2*Math.sin(t*8));Ls.forEach((q,j)=>q.setHex?0:q.color.setHex(Math.sin(t*4+j)>0?0x7cf0d0:0xa18cf3));sv.rotation.y=Math.sin(t*.5)*.2;cm.rotation.y=Math.sin(t*.5)*-.2}}
+
+// 4 — HTTP сұрауының қабаттары
+{const g=G[4],sk=new T.Group(),sl_=[];g.add(sk);
+[['METHOD',pu],['URL',gy],['HEADERS',dk],['BODY',pu]].forEach(([s,m])=>{const b=new T.Group();mk(BX(5,.55,3),m,0,0,0,b);edge(BX(5.02,.57,3.02),0x161616,b);const l=lab(s,'#161616',.7);l.position.set(4.3,0,1.2);b.add(l);sk.add(b);sl_.push(b)});
+const gr=new T.GridHelper(80,80,0xa18cf3,0xd8d2ee);gr.position.y=-4;g.add(gr);
+U[4]=(t,l)=>{const sp=1+2.2*sm(cl(l*1.6));sl_.forEach((b,i)=>{b.position.y=(1.5-i)*sp*.6;b.rotation.y=Math.sin(t*.4+i)*.08});sk.rotation.y=.5+Math.sin(t*.3)*.2+l*.8}}
+
+// 5 — жауап кодтары
+{const g=G[5],os=[];
+[[200,'#4ade80'],[201,'#38bdf8'],[401,'#fbbf24'],[403,'#fb923c'],[404,'#a18cf3'],[500,'#f87171']].forEach(([n,c])=>{const o=new T.Group();mk(new T.SphereGeometry(.9,32,32),std(c,.2,.3,c,.45),0,0,0,o);const l=lab(String(n),'#fff',.8);l.position.z=1.2;o.add(l);g.add(o);os.push(o)});
+const rg=mk(new T.TorusGeometry(5,.02,8,100),wh,0,0,0,g);rg.rotation.x=Math.PI/2;pts(g,800,12,0xa18cf3,.06);
+U[5]=(t,l)=>{const r=4.5+sm(l)*1.8;os.forEach((o,i)=>{const a=t*.3+i*Math.PI/3;o.position.set(Math.cos(a)*r,Math.sin(t*1.2+i)*.9,Math.sin(a)*r)});rg.scale.setScalar(r/5)}}
+
+// 6 — endpoint тоннелі
+{const g=G[6],rs=[],P=['/users','/products','/orders','/weather?city=Almaty'];
+for(let i=0;i<16;i++){const r=mk(new T.TorusGeometry(3.5,.05,8,64),pu,0,0,0,g);if(i%3==0){const l=lab(P[(i/3|0)%4],'#fff',.7);l.position.y=4.3;r.add(l)}rs.push(r)}
+pts(g,600,12,0xa18cf3,.06);
+U[6]=(t,l)=>{rs.forEach((r,i)=>{r.position.z=((i*2.6+t*4+l*30)%42)-36;r.rotation.z=i*.4+t*.2})}}
+
+// 7 — құлып және аутентификация
+{const g=G[7],lk=new T.Group(),orb=[];g.add(lk);mk(BX(2.6,2.2,1.2),dk,0,-.4,0,lk);const kh=mk(new T.CylinderGeometry(.22,.22,.15,16),pu,0,-.2,.65,lk);kh.rotation.x=Math.PI/2;mk(BX(.12,.6,.15),pu,0,-.6,.65,lk);
+const sh=mk(new T.TorusGeometry(.85,.2,16,40,Math.PI),wh,0,.7,0,lk);
+const sp=mk(new T.SphereGeometry(4.5,24,18),wf(0x161616,.25),0,0,0,g);
+const ky=new T.Group();mk(new T.TorusGeometry(.4,.1,12,24),pu,0,0,0,ky);mk(new T.CylinderGeometry(.08,.08,1.6,10),pu,0,-1,0,ky);g.add(ky);
+['API key','Bearer','OAuth','HTTPS / TLS'].forEach(s=>{const l=lab(s,'#161616',.6);g.add(l);orb.push(l)});pts(g,500,10,0x161616,.06);
+U[7]=(t,l)=>{const o=sm(cl(l*1.8));sh.position.y=.7+.6*o;sh.rotation.y=o*Math.PI*.9;lk.rotation.y=Math.sin(t*.5)*.35;sp.rotation.y=t*.1;ky.position.set(Math.cos(t*.6)*6.2,Math.sin(t)*.8,Math.sin(t*.6)*6.2);ky.rotation.z=t;orb.forEach((s,i)=>{const a=t*.25+i*Math.PI/2;s.position.set(Math.cos(a)*5.4,1.8*Math.sin(i*2+t*.5),Math.sin(a)*5.4)})}}
+
+const pal=[['#9d8ce8','#161616'],['#120f1c','#f4f1ff'],['#a18cf3','#161616'],['#0d0b14','#f4f1ff'],['#f4f2fb','#161616'],['#16121f','#f4f1ff'],['#0b0a12','#f4f1ff'],['#a18cf3','#161616']].map(a=>a.map(c=>new T.Color(c)));
+const W=[[[-1,1.5,12],[0,0,0]],[[0,3,14],[0,0,0]],[[4,2,12],[0,0,0]],[[0,3,16],[0,0,0]],[[6,5,11],[0,0,0]],[[0,2,15],[0,0,0]],[[0,0,10],[0,0,-14]],[[0,2,11],[0,0,0]]];
+const secs=[...document.querySelectorAll('section')],cn=document.getElementById('n'),clk=new T.Clock(),lk=(a,b,t)=>a+(b-a)*t;
+let sp=0,mx=0,my=0;addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+function rz(){R.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}addEventListener('resize',rz);rz();
+const bg=new T.Color(),fg=new T.Color();
+(function loop(){requestAnimationFrame(loop);const t=clk.getElapsedTime(),mxs=document.documentElement.scrollHeight-innerHeight;
+sp+=(cl(scrollY/mxs)-sp)*.07;const f=sp*(N-1),i=Math.min(N-2,f|0),e=sm(cl((f-i-.25)/.5)),wide=innerWidth>760,j=i+1;
+const sxa=wide?(i%2?3.4:-3.4):0,sxb=wide?(j%2?3.4:-3.4):0,sx=lk(sxa,sxb,e),sy=wide?0:-2.4,a=W[i],b=W[j],arc=Math.sin(Math.PI*e),bx=(i+e)*X;
+C.position.set(bx+lk(a[0][0],b[0][0],e)+sx+mx*1.6,lk(a[0][1],b[0][1],e)+arc*3.5-my*1.2,lk(a[0][2],b[0][2],e)+arc*9);
+C.lookAt(bx+lk(a[1][0],b[1][0],e)+sx,lk(a[1][1],b[1][1],e)+sy,lk(a[1][2],b[1][2],e));C.rotateZ(arc*.07*(i%2?-1:1));
+bg.copy(pal[i][0]).lerp(pal[j][0],e);fg.copy(pal[i][1]).lerp(pal[j][1],e);S.background.copy(bg);S.fog.color.copy(bg);
+document.documentElement.style.background=bg.getStyle();document.documentElement.style.setProperty('--fg',fg.getStyle());
+dl.position.set(C.position.x+5,8,8);pl.position.set(C.position.x-5,3,C.position.z-4);pl2.position.set(C.position.x+6,-2,C.position.z-6);
+secs.forEach((s,k)=>{const r=s.getBoundingClientRect(),l=cl(-r.top/(r.height-innerHeight)),c=s.firstChild,o=cl(Math.min((-r.top/(r.height-innerHeight)+.12)*6,(1.12+r.top/(r.height-innerHeight))*6));
+c.style.opacity=o;c.style.transform='translateY('+(1-o)*28+'px)';if(Math.abs(k-f)<1.7)U[k](t,l)});
+cn.textContent=String(Math.round(f)+1).padStart(2,'0')+' / 08';R.render(S,C)})();
+</script></body></html>
