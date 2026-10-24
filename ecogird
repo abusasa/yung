@@ -1,0 +1,145 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Caspian EcoGrid — Энергия</title>
+<style>
+:root{color-scheme:dark;--bg:#121315;--fg:#e8eaeb;--mut:#8b9094;--ac:#5ff3e0;--warn:#f2c14e;--ln:rgba(255,255,255,.12);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"Segoe UI",Inter,Helvetica,Arial,sans-serif}
+#c{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.s{position:relative;height:100vh;display:flex;align-items:flex-end;padding:0 6vw 9vh;z-index:1;pointer-events:none}
+.s.tall{height:300vh}
+.t{max-width:560px;opacity:0;transform:translateY(16px);transition:.9s ease}.t.in,.t.on{opacity:1;transform:none}
+.k{font:500 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:var(--ac);text-transform:uppercase;margin-bottom:14px}
+h1,h2{font-weight:300;letter-spacing:-.02em;margin:0 0 14px;line-height:1.15}h1{font-size:clamp(26px,3.6vw,46px)}h2{font-size:clamp(22px,2.6vw,34px)}
+p{color:#b9bdc0;margin:0 0 12px}.hint{position:fixed;left:50%;bottom:5vh;transform:translateX(-50%);color:var(--mut);font-size:13px;z-index:2;transition:.6s;text-align:center;width:90%}
+#rev{position:fixed;top:12vh;left:50%;transform:translateX(-50%);max-width:620px;text-align:center;z-index:2;opacity:0;transition:1.4s;pointer-events:none;padding:0 20px}#rev.on{opacity:1}
+#cap{position:fixed;top:10vh;left:6vw;z-index:2;opacity:0;transition:.5s;pointer-events:none}#cap.on{opacity:1}
+#cap b{display:block;font-weight:300;font-size:clamp(20px,2.4vw,30px)}
+.lb{position:fixed;left:0;top:0;z-index:2;font:11px ui-monospace,monospace;color:#cfd3d6;pointer-events:none;white-space:nowrap;display:none}
+#pn{position:fixed;right:4vw;top:50%;transform:translate(30px,-50%);width:340px;z-index:3;padding:20px;background:rgba(28,30,33,.62);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--ln);border-radius:16px;opacity:0;pointer-events:none;transition:.7s}
+#pn.on{opacity:1;pointer-events:auto;transform:translateY(-50%)}
+.hd{display:flex;justify-content:space-between;align-items:center;font:500 11px ui-monospace,monospace;letter-spacing:.18em;color:var(--mut)}
+.pill{padding:3px 9px;border:1px solid var(--ln);border-radius:99px;color:var(--ac)}.pill.w{color:var(--warn);border-color:var(--warn)}
+#fv{font-size:44px;font-weight:200;letter-spacing:-.03em}#ch{width:100%;height:90px;display:block;margin:6px 0 10px}
+.row{display:flex;justify-content:space-between;font-size:13px;color:var(--mut)}.row b{color:var(--fg);font-weight:400}
+.bar{display:block;height:3px;background:var(--ln);margin:6px 0 12px;border-radius:3px}.bar u{display:block;height:100%;background:var(--ac);border-radius:3px;transition:.2s}
+#msg{font-size:13px;min-height:84px;color:#c9cdd0;border-top:1px solid var(--ln);padding-top:10px}
+button{width:100%;background:transparent;color:var(--fg);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:11px;font:inherit;font-size:13px;cursor:pointer;transition:.3s}button:hover{border-color:var(--warn);color:var(--warn)}
+.sw{display:flex;gap:12px;align-items:center;margin-top:12px;font-size:13px;cursor:pointer}.sw input{display:none}
+.sw span{flex:none;width:40px;height:22px;border-radius:22px;border:1px solid rgba(255,255,255,.3);position:relative;transition:.3s}
+.sw span:after{content:"";position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--mut);transition:.3s}
+.sw input:checked+span{border-color:var(--ac)}.sw input:checked+span:after{left:21px;background:var(--ac)}.sw input:disabled+span{opacity:.35}.sw:has(input:disabled){cursor:not-allowed;color:var(--mut)}
+@media(max-width:760px){#pn{right:12px;left:12px;width:auto;top:auto;bottom:12px;transform:translateY(30px)}#pn.on{transform:none}#fv{font-size:30px}#ch{height:50px}#msg{min-height:0}}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="rev"><h2>Энергия — это движение.</h2><p>Это способность совершать работу. Это то, что заставляет частицы двигаться, звезды — гореть, а человечество — созидать.</p></div>
+<div class="hint" id="hint">Удерживайте курсор на сфере, чтобы вдохнуть жизнь</div>
+<div id="cap"><div class="k" id="ck"></div><b id="ct"></b></div>
+<div class="lb" data-n="maek">МАЭК</div><div class="lb" data-n="aktau">Актау</div><div class="lb" data-n="zhan">Жанаозен</div>
+
+<section class="s" id="s0"><div class="t on"><div class="k">00 — Энергия</div><h1>Мир без энергии — это статичное ничто.</h1><p>Представьте вселенную, где замерло абсолютно всё.</p></div></section>
+<section class="s"><div class="t"><div class="k">01 — Исток цивилизации</div><h2>Первый огонь</h2><p>Каждый шаг человеческого прогресса — это история приручения нового источника энергии. От первого костра до атомного ядра. Энергия — главная движущая сила нашей цивилизации (Өркениеттің қозғаушы күші).</p></div></section>
+<section class="s tall"></section>
+<section class="s"><div class="t"><div class="k">03 — Кризисный мониторинг</div><h2>Изолированный энергоузел</h2><p>Мангистауский энергоузел не связан с Единой энергосистемой Казахстана. Аварийная остановка генерации на МАЭК вызывает дефицит мощности, веерные отключения в Актау и Жанаозене и остановку насосов опреснения морской воды.</p></div></section>
+<section class="s"><div class="t"><div class="k">04 — Caspian EcoGrid</div><h2>Автоматическая балансировка ВИЭ</h2><p>Продукт переходит в режим кризисного контроля и подключает распределённую зелёную генерацию региона: ветропарки и промышленные накопители.</p></div></section>
+
+<aside id="pn"><div class="hd">CASPIAN ECOGRID <span id="st" class="pill">НОРМА</span></div>
+<div><span id="fv">50.00</span> Гц <small style="color:var(--mut)">норма 50</small></div><canvas id="ch"></canvas>
+<div class="row">Дефицит мощности <b id="df">0 МВт</b></div><div class="row">Опреснённая вода <b id="wv">100%</b></div><i class="bar"><u id="wb" style="width:100%"></u></i>
+<div id="msg">Сеть стабильна. Мониторинг активен.</div>
+<button id="b1">Имитировать критическое падение генерации МАЭК</button>
+<label class="sw"><input type="checkbox" id="tg" disabled><span></span>Активировать протокол автоматической балансировки ВИЭ</label></aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const R=new THREE.WebGLRenderer({canvas:$('#c'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene();S.background=new THREE.Color(0x121315);S.fog=new THREE.Fog(0x121315,12,30);
+const C=new THREE.PerspectiveCamera(40,1,.1,100);
+S.add(new THREE.AmbientLight(0xffffff,.45));const key=new THREE.DirectionalLight(0xffffff,.9);key.position.set(4,6,5);S.add(key);
+/* Материалы */
+const M=(c,o={},b=1)=>{const m=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.85,metalness:.05,transparent:true,opacity:b},o));m.userData.o=b;return m};
+const B=(c,b=1,o={})=>{const m=new THREE.MeshBasicMaterial(Object.assign({color:c,transparent:true,opacity:b},o));m.userData.o=b;return m};
+const E=m=>{const l=new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.35}));l.material.userData.o=.35;m.add(l);return m};
+const mesh=(g,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);return o};
+const fade=(g,w)=>{g.visible=w>.01;g.traverse(o=>{if(o.material)o.material.opacity=(o.material.userData.o??1)*w});g.scale.setScalar((g.userData.s||1)*(.7+.3*w))};
+/* ЭКРАН 0: стеклянная сфера (матовое стекло, внутри — свет) */
+const G0=new THREE.Group(),glass=mesh(new THREE.SphereGeometry(1.4,64,64),new THREE.MeshPhysicalMaterial({color:0xaab0b5,roughness:.38,metalness:0,transmission:.92,thickness:1.4,ior:1.35,clearcoat:.6,clearcoatRoughness:.3,transparent:true}));
+const core=mesh(new THREE.SphereGeometry(1,32,32),B(0xffffff,.9)),inL=new THREE.PointLight(0xffffff,0,8);G0.add(glass,core,inL);S.add(G0);
+const R0=new THREE.Group(),rings=[0,1,2].map(()=>{const r=mesh(new THREE.RingGeometry(.99,1,96),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0}),0,0,-2);R0.add(r);return r});S.add(R0);
+/* ЭКРАН 1: костёр */
+const fire=new THREE.Group();for(let i=0;i<4;i++){const g=new THREE.Group(),l=mesh(new THREE.CylinderGeometry(.07,.07,1.2,12),M(0x3a3836));l.rotation.z=Math.PI/2;l.position.y=.08;g.add(l);g.rotation.y=i*Math.PI/4;fire.add(g)}
+const fl1=mesh(new THREE.ConeGeometry(.3,1.2,7,1,true),B(0xfff1d6,.7,{side:2})),fl2=mesh(new THREE.ConeGeometry(.16,.8,7,1,true),B(0x5ff3e0,.8,{side:2}));fl1.position.y=.7;fl2.position.y=.5;
+const fL=new THREE.PointLight(0xffe2b8,2,6);fL.position.y=.8;fire.add(fl1,fl2,fL);fire.position.y=-.7;fire.userData.s=1.3;S.add(fire);
+/* ЭКРАН 2: ТЭЦ → вышка МАЭК → ветрогенератор */
+const tpp=new THREE.Group();tpp.add(E(mesh(new THREE.BoxGeometry(2.4,1.3,1.2),M(0x3b3e42),0,.65)),E(mesh(new THREE.BoxGeometry(.8,.9,.8),M(0x4a4e52),-.6,1.75)),E(mesh(new THREE.CylinderGeometry(.14,.2,2.6,16),M(0x55595e),.8,1.9)));
+const smoke=[...Array(9)].map((_,i)=>{const s=mesh(new THREE.SphereGeometry(.12,12,12),M(0x9a9fa3,{},.35));s.userData.p=i/9;tpp.add(s);return s});tpp.position.y=-1.4;S.add(tpp);
+const pyl=new THREE.Group();pyl.add(mesh(new THREE.ConeGeometry(.9,3.6,4,6),B(0xffffff,.55,{wireframe:true}),0,1.8,0),E(mesh(new THREE.BoxGeometry(2.2,.06,.06),M(0xdfe2e4),0,2.7)),E(mesh(new THREE.BoxGeometry(1.6,.06,.06),M(0xdfe2e4),0,3.05)),E(mesh(new THREE.BoxGeometry(2.8,.1,.5),M(0x3b3e42),0,.05)));
+[-.6,.6].forEach(z=>{const p=mesh(new THREE.CylinderGeometry(.07,.07,3.2,16),M(0x7fa8a4),0,.28,z*.7);p.rotation.z=Math.PI/2;pyl.add(p)});
+pyl.add(mesh(new THREE.CylinderGeometry(.07,.07,.6,16),M(0x7fa8a4),1.2,.58,.42));pyl.position.y=-1.8;S.add(pyl);
+const turb=(sc)=>{const g=new THREE.Group(),w=M(0xeceeef,{roughness:.9});g.add(mesh(new THREE.CylinderGeometry(.04,.09,1.6,16),w,0,.8,0),mesh(new THREE.BoxGeometry(.22,.12,.3),w,0,1.62,0));const r=new THREE.Group();r.position.set(0,1.62,.18);for(let i=0;i<3;i++){const a=new THREE.Group(),b=mesh(new THREE.BoxGeometry(.06,.8,.015),w,0,.4,0);a.add(b);a.rotation.z=i*2.094;r.add(a)}g.add(r);g.userData.r=r;g.scale.setScalar(sc);return g};
+const wind=turb(1.7);wind.position.y=-1.7;S.add(wind);
+/* ЭКРАНЫ 3–4: карта Мангистау */
+const map=new THREE.Group(),pts=[];for(let x=-5;x<=5;x+=.16)for(let z=-3;z<=3;z+=.16)if((x/5.2)**2+(z/3)**2<1&&x>-4.2-.4*z)pts.push(x,0,z);
+const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));map.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x7a8086,size:.05})));
+const V=(x,z)=>new THREE.Vector3(x,0,z),P={maek:V(-2.2,-1.5),aktau:V(-3.3,-.3),zhan:V(3,1.4),w1:V(-.8,-2.3),w2:V(1.2,-.4)};
+const nodeMat={};const node=(k,r)=>{nodeMat[k]=B(0xdfe3e6);const n=mesh(new THREE.SphereGeometry(r,16,16),nodeMat[k],P[k].x,.05,P[k].z);map.add(n);return n};
+const nMaek=node('maek',.12),nAk=node('aktau',.1),nZh=node('zhan',.1);
+const link=(a,b)=>{const d=b.clone().sub(a),m=mesh(new THREE.BoxGeometry(1,1,1),B(0xdfe3e6,.5));m.position.copy(a).add(b).multiplyScalar(.5);m.position.y=.02;m.rotation.y=-Math.atan2(d.z,d.x);m.scale.set(d.length(),.012,.012);m.userData={a,b};map.add(m);return m};
+const L=[link(P.maek,P.aktau),link(P.maek,P.zhan),link(P.w1,P.aktau),link(P.w2,P.zhan)];
+const farms=[];[[P.w1,-.5],[P.w1,0],[P.w1,.5],[P.w2,-.5],[P.w2,0],[P.w2,.5]].forEach(([p,o],i)=>{const t=turb(.55);t.position.set(p.x+o*.9,0,p.z+(i%2?.3:-.3)+(i>2?.3:0));map.add(t);farms.push(t)});
+const batMat=B(0x555a5f);[V(-2.6,.5),V(2.4,.4)].forEach(p=>map.add(mesh(new THREE.BoxGeometry(.4,.14,.2),batMat,p.x,.08,p.z)));
+const dots=[];for(let i=0;i<12;i++){const d=mesh(new THREE.SphereGeometry(.05,10,10),B(0x5ff3e0));d.userData={l:2+(i%2),o:Math.floor(i/2)/6};map.add(d);dots.push(d)}
+map.visible=false;S.add(map);
+/* Состояние */
+let p=scrollY/innerHeight,e=0,latch=false,hov=false,mode='n',k=0,s=0,f=50,hist=[],acc=0,T=0;
+addEventListener('scroll',()=>p=scrollY/innerHeight,{passive:true});
+const RC=new THREE.Raycaster(),mp=new THREE.Vector2(),hit=ev=>{mp.set(ev.clientX/innerWidth*2-1,-ev.clientY/innerHeight*2+1);RC.setFromCamera(mp,C);hov=p<.8&&RC.intersectObject(glass).length>0};
+addEventListener('pointermove',hit);addEventListener('pointerdown',hit);addEventListener('pointerup',ev=>{if(ev.pointerType!='mouse')hov=false});
+const io=new IntersectionObserver(en=>en.forEach(x=>x.target.classList.toggle('in',x.isIntersecting)),{threshold:.35});document.querySelectorAll('.s .t').forEach(t=>io.observe(t));
+$('#b1').onclick=()=>{mode='c';$('#tg').checked=false;$('#tg').disabled=false};
+$('#tg').onchange=ev=>{mode=ev.target.checked?'s':'c'};
+const ch=$('#ch'),cx=ch.getContext('2d');
+function size(){R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();const d=Math.min(devicePixelRatio,2);ch.width=ch.clientWidth*d;ch.height=ch.clientHeight*d}
+addEventListener('resize',size);size();
+const cW=new THREE.Color(0xdfe3e6),cY=new THREE.Color(0xf2c14e),cT=new THREE.Color(0x5ff3e0),tmp=new THREE.Color();
+const caps=[['02 — Прошлое','Угольная ТЭЦ'],['02 — Настоящее','Высоковольтная сеть МАЭК'],['02 — Будущее','Ветрогенерация']];
+const MSG={n:'Сеть стабильна. Мониторинг активен.',c:'Внимание: Частота сети упала до 48.5 Гц. Дефицит: 250 МВт. Критическая угроза остановки опреснительных установок.',b:'Автоматическая балансировка: ветропарки и накопители выходят на мощность…',s:'Частота сети: 50.0 Гц (Стабильно). Дефицит перекрыт за счёт мощностей ВИЭ. Водоснабжение и энергообеспечение региона сохранены.'};
+const clk=new THREE.Clock(),lbs=[...document.querySelectorAll('.lb')];
+(function loop(){requestAnimationFrame(loop);const dt=Math.min(clk.getDelta(),.05);T+=dt;
+e=cl(e+(hov?dt/1.2:-dt/2.5));if(e>.95)latch=true;
+const lit=Math.max(e,latch?.8:0,cl(p*1.2));
+/* ЭКРАН 0 */
+const w0=cl(1.4-p*1.2);fade(G0,w0);core.scale.setScalar(.001+lit*(.9+cl(p-.2)*.7));inL.intensity=lit*2.5;G0.rotation.y+=dt*.35*lit;
+R0.visible=p<1.3;rings.forEach((r,i)=>{const ph=(T*.22+i/3)%1;r.scale.setScalar(1+ph*7);r.material.opacity=(1-ph)*.16*e});
+$('#rev').classList.toggle('on',latch&&p<.9);$('#hint').style.opacity=(latch||p>.3)?0:1;
+/* ЭКРАН 1 */
+const wf=cl(1.6-Math.abs(p-1.5)*3);fade(fire,wf);fl1.scale.set(1+.1*Math.sin(T*9),1+.18*Math.sin(T*7+1),1);fl2.scale.y=1+.2*Math.sin(T*11);fL.intensity=2+.5*Math.sin(T*13);fire.rotation.y+=dt*.2;
+/* ЭКРАН 2 */
+const u=p-2,wt=[cl(1.6-Math.abs(u-.5)*2.2),cl(1.6-Math.abs(u-1.5)*2.2),cl(1.6-Math.abs(u-2.5)*2.2)],mw=cl((5-p)*3);
+fade(tpp,wt[0]*mw);fade(pyl,wt[1]*mw);fade(wind,wt[2]*mw);[tpp,pyl,wind].forEach(g=>g.rotation.y+=dt*.25);
+smoke.forEach(m=>{const q=(T*.12+m.userData.p)%1;m.position.set(.8+q*.5+.03*Math.sin(T+q*9),3.2+q*1.6,0);m.scale.setScalar(.4+q*1.4)});
+wind.userData.r.rotation.z-=dt*1.2;
+const ci=u<1?0:u<2?1:2;$('#cap').classList.toggle('on',p>1.9&&p<4.8);$('#ck').textContent=caps[cl(Math.floor(u),0,2)][0];$('#ct').textContent=caps[cl(Math.floor(u),0,2)][1];
+/* ЭКРАНЫ 3–4 */
+const m=cl((p-4.6)*2.2);map.visible=m>.01;map.scale.setScalar(.8+.2*m);
+C.position.set(0,m*6.4,7-m*.9);C.lookAt(0,0,0);
+k+=((mode=='n'?0:1)-k)*Math.min(1,dt*4);s+=((mode=='s'?1:0)-s)*Math.min(1,dt*(mode=='s'?1.1:3));
+const warn=k*(1-s);
+tmp.copy(cW).lerp(cY,warn).lerp(cT,s*.55);
+[L[0],L[1]].forEach(l=>{l.material.color.copy(tmp);l.material.opacity=.55;l.scale.y=l.scale.z=.014*(1-.65*warn)+.004*s});
+[L[2],L[3]].forEach(l=>{l.material.color.copy(cT);l.material.opacity=.12+.88*s;l.scale.y=l.scale.z=.012+.004*s});
+[nAk,nZh].forEach((n,i)=>{n.scale.setScalar(1+.35*warn*Math.sin(T*6+i));nodeMat[i?'zhan':'aktau'].color.copy(cW).lerp(cY,warn).lerp(cT,s*.5)});
+batMat.color.set(0x555a5f).lerp(cT,s);
+farms.forEach((t,i)=>t.userData.r.rotation.z-=dt*2.4*s*(.9+.1*(i%3)));
+dots.forEach(d=>{const l=L[d.userData.l],q=(T*.7+d.userData.o)%1;d.position.lerpVectors(l.userData.a,l.userData.b,q);d.position.y=.07;d.visible=s>.05;d.scale.setScalar(s)});
+lbs.forEach(el=>{const v=P[el.dataset.n].clone().add(new THREE.Vector3(0,.15,0)).project(C);el.style.display=m>.6?'block':'none';el.style.transform=`translate(${(v.x*.5+.5)*innerWidth+10}px,${(-v.y*.5+.5)*innerHeight-8}px)`});
+$('#pn').classList.toggle('on',p>4.6);
+/* Частота сети */
+const tf=mode=='n'?50:mode=='c'?48.5:50;f+=(tf-f)*Math.min(1,dt*(mode=='c'?3:mode=='s'?1.4:2))+(Math.random()-.5)*.004*(1-k*.5);
+acc+=dt;if(acc>.05){acc=0;hist.push(f);if(hist.length>200)hist.shift()}
+const dev=50-f,def=Math.round(cl(dev/1.5,0,1.2)*250),wat=cl(100-dev*53,0,100);
+$('#fv').textContent=f.toFixed(2);$('#df').textContent=def+' МВт';$('#wv').textContent=Math.round(wat)+'%';$('#wb').style.width=wat+'%';
+const stable=Math.abs(dev)<.08,st=$('#st');st.textContent=mode=='n'?'НОРМА':stable?'СТАБИЛЬНО':dev>.3&&mode=='c'?'АВАРИЯ':'БАЛАНСИРОВКА';st.classList.toggle('w',!stable&&mode!='n');
+$('#msg').textContent=mode=='n'?MSG.n:mode=='c'?MSG.c:stable?MSG.s:MSG.b;
+const W=ch.width,H=ch.height,y=v=>H-(v-47.5)/3*H;cx.clearRect(0,0,W,H);cx.strokeStyle='rgba(255,255,255,.15)';cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(0,y(50));cx.lineTo(W,y(50));cx.stroke();cx.setLineDash([]);
+cx.strokeStyle=dev>.5?'#f2c14e':'#5ff3e0';cx.lineWidth=1.6;cx.beginPath();hist.forEach((v,i)=>{const X=i/199*W;i?cx.lineTo(X,y(v)):cx.moveTo(X,y(v))});cx.stroke();
+R.render(S,C)})();
+</script></body></html>
